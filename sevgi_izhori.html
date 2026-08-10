@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="format-detection" content="telephone=no" />
+<title>Для тебя... 💌</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;600;700&display=swap');
+
+  :root {
+    --rose: #e8436a;
+    --rose-light: #fce4ec;
+    --rose-glow: rgba(232,67,106,0.35);
+    --blush: #fff0f3;
+    --wine: #6b1d3a;
+    --cream: #fffaf6;
+    --vh: 1vh; /* set by JS to fix iOS Safari address-bar issue */
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+  html{
+    height:100%;
+    /* prevent iOS text auto-zoom/bounce */
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+  }
+
+  body{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:calc(var(--vh, 1vh) * 100);
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--cream);
+    transition:background 1s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    overscroll-behavior:none;
+    touch-action:none;
+    -webkit-user-select:none;
+    user-select:none;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* === BG HEARTS === */
+  .bg-hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .bg-heart{
+    position:absolute;bottom:-80px;font-size:1.4rem;opacity:0;
+    animation:floatUp linear infinite;
+    will-change:transform;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(0) rotate(0) scale(.7);opacity:0}
+    10%{opacity:.5} 90%{opacity:.3}
+    100%{transform:translateY(-110vh) rotate(360deg) scale(1.1);opacity:0}
+  }
+
+  /* === CARD === */
+  .card{
+    position:relative;z-index:2;
+    width:92%;max-width:520px;
+    max-height:92%;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    background:linear-gradient(165deg,#fff 0%,var(--blush) 100%);
+    border-radius:28px;
+    padding:36px 24px 28px;
+    text-align:center;
+    box-shadow:0 4px 6px rgba(107,29,58,.04),0 24px 60px rgba(232,67,106,.10);
+    transition:box-shadow .4s ease;
+  }
+
+  /* === ENVELOPE === */
+  .envelope{width:56px;height:38px;margin:0 auto 14px;position:relative;cursor:default}
+  .envelope-body{width:56px;height:34px;background:var(--rose-light);border:2px solid #e0b0c0;border-radius:4px;position:absolute;bottom:0}
+  .envelope-flap{width:0;height:0;border-left:28px solid transparent;border-right:28px solid transparent;border-top:20px solid #f5d0da;position:absolute;top:0;animation:flapOpen 1.5s ease-out .5s both;transform-origin:top center}
+  @keyframes flapOpen{0%{transform:rotateX(0)}100%{transform:rotateX(180deg)}}
+  .envelope-heart{position:absolute;bottom:8px;left:50%;transform:translateX(-50%) scale(0);font-size:1.1rem;animation:heartPop .4s ease-out 1.4s forwards}
+  @keyframes heartPop{0%{transform:translateX(-50%) scale(0) translateY(0)}60%{transform:translateX(-50%) scale(1.3) translateY(-12px)}100%{transform:translateX(-50%) scale(1) translateY(-18px)}}
+
+  /* === BEAR === */
+  .bear{font-size:3.8rem;line-height:1;margin-bottom:8px;display:inline-block;animation:wiggle 2.5s ease-in-out infinite}
+  @keyframes wiggle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+
+  /* === QUESTION === */
+  .question{font-family:'Caveat',cursive;font-size:1.75rem;font-weight:700;color:var(--wine);margin-bottom:6px;min-height:2.6rem;line-height:1.3}
+  .sub{font-size:.82rem;color:#b05070;margin-bottom:10px;font-weight:400;min-height:1.3rem}
+
+  /* === LOVE METER === */
+  .meter-wrap{
+    width:82%;max-width:300px;margin:0 auto 20px;
+    background:#f3dce2;border-radius:20px;height:16px;
+    overflow:hidden;position:relative;
+    border:2px solid #e8c0cc;
+  }
+  .meter-fill{
+    height:100%;width:0%;border-radius:20px;
+    background:linear-gradient(90deg,#f7a0b5,var(--rose),#ff4570);
+    transition:width .5s cubic-bezier(.4,0,.2,1);
+    position:relative;
+  }
+  .meter-fill::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(255,255,255,.35) 0%,transparent 60%);
+    border-radius:20px;
+  }
+  .meter-label{
+    font-size:.7rem;color:var(--wine);margin-top:5px;margin-bottom:4px;font-weight:600;
+    min-height:1rem;
+  }
+
+  /* === BUTTONS === */
+  .buttons{
+    display:flex;justify-content:center;align-items:center;
+    gap:20px;min-height:64px;position:relative;
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;
+    border:none;border-radius:60px;cursor:pointer;
+    -webkit-user-select:none;user-select:none;
+    touch-action:manipulation;
+    transition:box-shadow .18s ease;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  #yes{
+    padding:15px 40px;
+    background:linear-gradient(135deg,var(--rose),#d63862);
+    color:#fff;box-shadow:0 8px 28px var(--rose-glow);
+    letter-spacing:.03em;
+    /* grow is handled via font-size & padding, NOT transform — so it won't overlap */
+  }
+  #yes:active{filter:brightness(.95)}
+  #no{
+    padding:13px 32px;background:#fff;color:var(--wine);
+    border:2px solid #e0c0cc;box-shadow:0 2px 8px rgba(0,0,0,.04);
+    white-space:nowrap;
+    touch-action:none; /* stops iOS from treating drag/scroll on the button */
+  }
+
+  /* === COUNTER === */
+  .counter{margin-top:12px;font-size:.78rem;color:#c07090;min-height:18px;font-style:italic}
+
+  /* === RESULT SCREEN === */
+  #result-screen{display:none;text-align:center}
+  #result-screen .big-heart{font-size:5rem;animation:pulse .8s ease-in-out infinite alternate}
+  @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.18)}}
+  #result-screen h2{font-family:'Caveat',cursive;font-size:1.95rem;color:var(--wine);margin:12px 0 8px;line-height:1.3}
+  #result-screen p{color:#b05070;font-size:.9rem;max-width:320px;margin:0 auto;line-height:1.6}
+
+  /* === CONFETTI === */
+  .confetti{position:fixed;top:-60px;pointer-events:none;user-select:none;font-size:1.6rem;animation:confettiFall linear forwards;z-index:10;will-change:transform}
+  @keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(115vh) rotate(720deg);opacity:0}}
+
+  /* === SHAKE === */
+  .shake{animation:shakeCard .45s ease-in-out}
+  @keyframes shakeCard{
+    0%,100%{transform:translateX(0)}
+    15%{transform:translateX(-6px) rotate(-.5deg)}
+    30%{transform:translateX(5px) rotate(.4deg)}
+    45%{transform:translateX(-4px) rotate(-.3deg)}
+    60%{transform:translateX(3px) rotate(.2deg)}
+    75%{transform:translateX(-2px)}
+  }
+
+  /* === DRAMATIC GLOW === */
+  .dramatic{box-shadow:0 0 60px rgba(232,67,106,.25),0 24px 60px rgba(232,67,106,.15) !important}
+
+  /* === SMALL PHONES === */
+  @media(max-width:480px){
+    .card{padding:28px 16px 22px;border-radius:22px}
+    .question{font-size:1.35rem}
+    .bear{font-size:3rem}
+    .buttons{gap:12px}
+    #yes{padding:12px 26px;font-size:.88rem}
+    #no{padding:10px 22px;font-size:.88rem}
+    #result-screen .big-heart{font-size:3.6rem}
+    #result-screen h2{font-size:1.6rem}
+    .meter-wrap{height:13px}
+  }
+
+  /* very short screens (landscape phones) */
+  @media(max-height:520px){
+    .envelope{display:none}
+    .bear{font-size:2.4rem;margin-bottom:4px}
+    .question{font-size:1.2rem;min-height:auto;margin-bottom:4px}
+    .sub{margin-bottom:6px}
+    .meter-wrap{margin-bottom:12px}
+    .card{padding:20px 16px}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-hearts" id="bgHearts"></div>
+
+<div class="card" id="card">
+  <div class="envelope" aria-hidden="true">
+    <div class="envelope-body"></div>
+    <div class="envelope-flap"></div>
+    <div class="envelope-heart">💌</div>
+  </div>
+
+  <div id="question-screen">
+    <div class="bear" id="bear">👰</div>
+    <div class="question" id="question">Выйдешь за меня? 💍</div>
+    <div class="sub" id="sub">Жду твой ответ...</div>
+
+    <div class="meter-wrap">
+      <div class="meter-fill" id="meterFill"></div>
+    </div>
+    <div class="meter-label" id="meterLabel">💗 Шкала любви: 0%</div>
+
+    <div class="buttons">
+      <button class="btn" id="yes" type="button">Да 💍</button>
+      <button class="btn" id="no" type="button">Нет 😅</button>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <div id="result-screen">
+    <div class="big-heart">💍</div>
+    <h2 id="result-title">Я знала, что ты скажешь Да! 🥹</h2>
+    <p id="result-text">Теперь мы жених и невеста... Навсегда вместе 💒❤️</p>
+  </div>
+</div>
+
+<script>
+  // ============ iOS SAFARI VIEWPORT HEIGHT FIX ============
+  // 100vh is unreliable on iOS Safari because of the dynamic address bar.
+  // We compute the real visible height in JS and store it as a CSS variable.
+  function setRealVH() {
+    const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+  }
+  setRealVH();
+  window.addEventListener('resize', setRealVH);
+  window.addEventListener('orientationchange', setRealVH);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setRealVH);
+  }
+
+  // Prevent iOS "rubber band" pull-to-refresh / page bounce
+  document.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+  }, { passive: false });
+
+  const noBtn    = document.getElementById('no');
+  const yesBtn   = document.getElementById('yes');
+  const bear     = document.getElementById('bear');
+  const question = document.getElementById('question');
+  const sub      = document.getElementById('sub');
+  const counter  = document.getElementById('counter');
+  const qScreen  = document.getElementById('question-screen');
+  const rScreen  = document.getElementById('result-screen');
+  const bgHearts = document.getElementById('bgHearts');
+  const card     = document.getElementById('card');
+  const meterFill  = document.getElementById('meterFill');
+  const meterLabel = document.getElementById('meterLabel');
+
+  let attempts = 0;
+  const DISAPPEAR_AT = 20;
+
+  const bears = [
+    '👰','🥺','😟','😢','😭','💔','🥀','😩','😤','🫠',
+    '🤕','😵‍💫','👻','💀','☠️','🪦','😇','👼','🫥','🤡','💍'
+  ];
+
+  const questions = [
+    'Выйдешь за меня? 💍',
+    'Подумай ещё разок? 🥺',
+    'Ты серьёзно?! 😟',
+    'У меня сердце болит... 😢',
+    'Ну пожалуйста, скажи "Да" 😭',
+    'Я без тебя жить не смогу 💔',
+    'Ладно... спрошу по-другому 🥀',
+    'ЖЕНИШЬСЯ НА МНЕ? 💒',
+    'Я уже платье выбрала... 😩',
+    'У тебя что, каменное сердце?! 😤',
+    'Мне плохо... голова кружится 🫠',
+    'Скорую вызывать?! 🤕',
+    'Уже теряю сознание... 😵‍💫',
+    'Всё... умираю от любви к тебе 👻',
+    'Вот и всё... прощай 💀',
+    'R.I.P. моё сердце ☠️',
+    'Пишу тебе с того света... 🪦',
+    'Ангелы сказали — нажми "Да" 😇',
+    'Даже на небесах тебя люблю 👼',
+    'Ну всё, ты сам напросился... 🫥',
+    'Кнопка "Нет" удалена. Навсегда. 💍'
+  ];
+
+  const subs = [
+    'Жду твой ответ...',
+    'Может, палец соскочил? 🤔',
+    'Эта кнопка не работает, честно! 😬',
+    'Моё сердце трещит по швам... 💔',
+    'Мне нужно одно слово — "Да" 🥺',
+    'Каждое "Нет" — удар в сердце...',
+    'Может, по-другому поймёшь... 🤷‍♀️',
+    'Я уже кольца купила 💍',
+    'Свадебное платье ждёт... 👗',
+    'Даже кнопка "Нет" устала от тебя! 😤',
+    'Шкала любви растёт, а ты упрямишься...',
+    'Скорая уже в пути... 🚑',
+    'Мир крутится... всё из-за тебя...',
+    'Я уже по ту сторону экрана... 👻',
+    'Последние слова: люблю тебя...',
+    'Тут холодно... нажми "Да", согрей 🥶',
+    'Привет с того света ✉️',
+    'Тут Wi-Fi плохой, но любовь сильная 📡',
+    'Вернусь, если нажмёшь "Да"... 🙏',
+    'Обратный отсчёт: 3... 2... 1... 💣',
+    'Теперь осталась только кнопка "Да" ✨'
+  ];
+
+  // All "Нет" button labels — every one has an emoji
+  const noLabels = [
+    'Нет 😅','Нет 😰','Нет 😨','Нет 😱',
+    'Нет 😳','Нет 🫣','Нет 😬','Нет 🥶',
+    'Нет 😵','Нет 🤯','Нет 😶','Нет 🫠',
+    'Нет 😓','Нет 🥵','Нет 😿','Нет 🙈',
+    'Нет 💀','Нет 👻','Нет 🫥','Нет 🤡'
+  ];
+
+  const meterMessages = [
+    '💗 Шкала любви: ','❤️ Любовь крепнет: ','💕 Чувства растут: ',
+    '🔥 Уже горячо: ','💘 Почти согласен: ','💥 Сопротивление бесполезно: '
+  ];
+
+  const bgColors = [
+    '#fffaf6','#fff5f5','#ffefef','#ffe8ea','#ffe0e5',
+    '#ffd8df','#ffd0da','#ffc8d5','#ffc0d0','#ffb8cb',
+    '#f0b0c6','#e8a8c0','#e0a0bb','#d898b5','#d090b0',
+    '#c888aa','#c080a5','#b878a0','#b0709a','#a86895',
+    '#a06090'
+  ];
+
+  const confettiEmoji = ['💖','💕','🌹','✨','💐','🥰','💗','🦋','💫','🎀','❤️‍🔥','💝','🫶','💌','💍','👰','💒'];
+
+  // ============ BG HEARTS ============
+  function spawnBgHearts() {
+    const h = ['♡','♥','💕','✿','❀'];
+    const count = window.innerWidth < 480 ? 12 : 18; // lighter on small phones
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = 'bg-heart';
+      el.textContent = h[Math.floor(Math.random()*h.length)];
+      el.style.left = Math.random()*100+'%';
+      el.style.animationDuration = (6+Math.random()*8)+'s';
+      el.style.animationDelay = (Math.random()*10)+'s';
+      el.style.fontSize = (.8+Math.random()*1.2)+'rem';
+      bgHearts.appendChild(el);
+    }
+  }
+  spawnBgHearts();
+
+  // ============ LOVE METER ============
+  function updateMeter() {
+    const pct = Math.min(Math.round((attempts / DISAPPEAR_AT) * 100), 100);
+    meterFill.style.width = pct + '%';
+    const msgIdx = Math.min(Math.floor(attempts / 4), meterMessages.length - 1);
+    meterLabel.textContent = meterMessages[msgIdx] + pct + '%';
+  }
+
+  // ============ GROW YES — padding/font only, NO transform ============
+  function growYes() {
+    const p = 14 + attempts * 1;
+    const ph = 40 + attempts * 1.6;
+    const fs = 1 + attempts * 0.025;
+    yesBtn.style.padding = `${Math.min(p,32)}px ${Math.min(ph,72)}px`;
+    yesBtn.style.fontSize = `${Math.min(fs,1.4)}rem`;
+  }
+
+  // ============ SHRINK NO ============
+  function shrinkNo() {
+    if (attempts >= DISAPPEAR_AT) {
+      noBtn.style.display = 'none';
+      return;
+    }
+    const s = 1 - attempts * (0.55 / DISAPPEAR_AT);
+    noBtn.style.transform = `scale(${Math.max(s, 0.3)})`;
+    noBtn.style.opacity = Math.max(1 - attempts * 0.025, 0.4);
+  }
+
+  // ============ SCREEN EFFECTS ============
+  function screenEffects() {
+    // bg color
+    if (attempts < bgColors.length) {
+      document.body.style.background = bgColors[attempts];
+    }
+    // shake every 5 attempts
+    if (attempts % 5 === 0 && attempts > 0) {
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 500);
+    }
+    // dramatic glow after halfway
+    if (attempts >= 10) card.classList.add('dramatic');
+    // mini confetti at milestones
+    if (attempts === 5 || attempts === 10 || attempts === 15) {
+      launchConfetti(12);
+    }
+    // update "Нет" button label
+    const lblIdx = Math.min(attempts - 1, noLabels.length - 1);
+    if (lblIdx >= 0) noBtn.textContent = noLabels[lblIdx];
+  }
+
+  // ============ GET SAFE VIEWPORT BOUNDS (accounts for iOS toolbar) ============
+  function getViewportBounds() {
+    if (window.visualViewport) {
+      return {
+        width: window.visualViewport.width,
+        height: window.visualViewport.height,
+        offsetLeft: window.visualViewport.offsetLeft,
+        offsetTop: window.visualViewport.offsetTop
+      };
+    }
+    return { width: window.innerWidth, height: window.innerHeight, offsetLeft: 0, offsetTop: 0 };
+  }
+
+  // ============ MOVE AWAY ============
+  let moveLock = false; // guards against duplicate touchstart+click firing on iOS
+  function moveAway() {
+    if (moveLock) return;
+    moveLock = true;
+    setTimeout(() => { moveLock = false; }, 260);
+
+    attempts++;
+    const idx = Math.min(attempts, questions.length - 1);
+
+    question.textContent = questions[idx];
+    sub.textContent      = subs[idx];
+    bear.textContent     = bears[Math.min(idx, bears.length - 1)];
+    counter.textContent  = `Нажал(а) "Нет" уже ${attempts} раз 🤨`;
+
+    growYes();
+    shrinkNo();
+    updateMeter();
+    screenEffects();
+
+    // move away — avoid card, using real visual viewport (handles iOS address bar)
+    if (noBtn.style.display !== 'none') {
+      const pad = 14;
+      const bw = noBtn.offsetWidth;
+      const bh = noBtn.offsetHeight;
+      const vp = getViewportBounds();
+      const cr = card.getBoundingClientRect();
+      const zone = {
+        left: cr.left - pad, right: cr.right + pad,
+        top: cr.top - pad, bottom: cr.bottom + pad
+      };
+      const maxX = Math.max(vp.width - bw - pad, pad);
+      const maxY = Math.max(vp.height - bh - pad, pad);
+
+      let nx, ny, t = 0;
+      do {
+        nx = vp.offsetLeft + Math.random()*(maxX - pad) + pad;
+        ny = vp.offsetTop + Math.random()*(maxY - pad) + pad;
+        t++;
+      } while (t<80 && nx+bw>zone.left && nx<zone.right && ny+bh>zone.top && ny<zone.bottom);
+
+      noBtn.style.position = 'fixed';
+      noBtn.style.left = nx+'px';
+      noBtn.style.top  = ny+'px';
+      noBtn.style.zIndex = '20';
+      noBtn.style.transition = 'none';
+    }
+  }
+
+  // ============ CONFETTI ============
+  function launchConfetti(count = 80) {
+    // reduce on small/low-power phones for smoother iOS performance
+    if (window.innerWidth < 400) count = Math.round(count * 0.6);
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'confetti';
+        el.textContent = confettiEmoji[Math.floor(Math.random()*confettiEmoji.length)];
+        el.style.left = Math.random()*100+'vw';
+        el.style.animationDuration = (2.2+Math.random()*2.5)+'s';
+        el.style.fontSize = (1+Math.random()*1.8)+'rem';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5500);
+      }, i*25);
+    }
+  }
+
+  // ============ CELEBRATE ============
+  function celebrate() {
+    yesBtn.removeEventListener('click', celebrate);
+    yesBtn.removeEventListener('touchend', celebrateTouch);
+    qScreen.style.display = 'none';
+    rScreen.style.display = 'block';
+    noBtn.style.display   = 'none';
+
+    document.body.style.background = '#fff0f3';
+    card.classList.remove('dramatic');
+    card.style.boxShadow = '0 0 80px rgba(232,67,106,.2), 0 24px 60px rgba(232,67,106,.12)';
+
+    launchConfetti(100);
+    setTimeout(() => launchConfetti(50), 1000);
+    setTimeout(() => launchConfetti(30), 2200);
+  }
+  function celebrateTouch(e){ e.preventDefault(); celebrate(); }
+
+  // ============ LISTENERS (mouse + touch, iOS-safe) ============
+  yesBtn.addEventListener('click', celebrate);
+  yesBtn.addEventListener('touchend', celebrateTouch, { passive: false });
+
+  noBtn.addEventListener('mouseover', moveAway);
+  noBtn.addEventListener('focus', moveAway);
+  noBtn.addEventListener('click', e => { e.preventDefault(); moveAway(); });
+  noBtn.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); moveAway(); }, { passive: false });
+
+  window.addEventListener('resize', () => {
+    const r = noBtn.getBoundingClientRect();
+    if (r.right<0||r.left>window.innerWidth||r.top>window.innerHeight||r.bottom<0) {
+      noBtn.style.position='';noBtn.style.left='';noBtn.style.top='';noBtn.style.transform='';
+    }
+  });
+
+  setTimeout(() => launchConfetti(8), 700);
+</script>
+</body>
+</html>

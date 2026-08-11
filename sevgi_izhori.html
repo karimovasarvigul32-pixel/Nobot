@@ -429,7 +429,7 @@
   }
 
   // ============ MOVE AWAY ============
-  let moveLock = false; // guards against duplicate touchstart+click firing on iOS
+  let moveLock = false;
   function moveAway() {
     if (moveLock) return;
     moveLock = true;
@@ -448,30 +448,42 @@
     updateMeter();
     screenEffects();
 
-    // move away — avoid card, using real visual viewport (handles iOS address bar)
+    // move away — strictly inside visible area (works in iframe + mobile)
     if (noBtn.style.display !== 'none') {
-      const pad = 14;
+      const pad = 10;
       const bw = noBtn.offsetWidth;
       const bh = noBtn.offsetHeight;
-      const vp = getViewportBounds();
+
+      // Use document.documentElement for iframe-safe bounds
+      const vw = document.documentElement.clientWidth;
+      const vh = document.documentElement.clientHeight;
+
       const cr = card.getBoundingClientRect();
       const zone = {
         left: cr.left - pad, right: cr.right + pad,
         top: cr.top - pad, bottom: cr.bottom + pad
       };
-      const maxX = Math.max(vp.width - bw - pad, pad);
-      const maxY = Math.max(vp.height - bh - pad, pad);
+
+      // Strict clamp: button cannot go outside [pad, vw-bw-pad] x [pad, vh-bh-pad]
+      const minX = pad;
+      const maxX = Math.max(vw - bw - pad, pad);
+      const minY = pad;
+      const maxY = Math.max(vh - bh - pad, pad);
 
       let nx, ny, t = 0;
       do {
-        nx = vp.offsetLeft + Math.random()*(maxX - pad) + pad;
-        ny = vp.offsetTop + Math.random()*(maxY - pad) + pad;
+        nx = minX + Math.random() * (maxX - minX);
+        ny = minY + Math.random() * (maxY - minY);
         t++;
-      } while (t<80 && nx+bw>zone.left && nx<zone.right && ny+bh>zone.top && ny<zone.bottom);
+      } while (t < 80 && nx + bw > zone.left && nx < zone.right && ny + bh > zone.top && ny < zone.bottom);
+
+      // Final safety clamp
+      nx = Math.max(minX, Math.min(nx, maxX));
+      ny = Math.max(minY, Math.min(ny, maxY));
 
       noBtn.style.position = 'fixed';
-      noBtn.style.left = nx+'px';
-      noBtn.style.top  = ny+'px';
+      noBtn.style.left = nx + 'px';
+      noBtn.style.top  = ny + 'px';
       noBtn.style.zIndex = '20';
       noBtn.style.transition = 'none';
     }
